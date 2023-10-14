@@ -1,0 +1,73 @@
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"regexp"
+	"sync"
+
+	"github.com/tomnomnom/rawhttp"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+	path := flag.String("path", "http://omeg0ivn7k95wloyezah7zcqghm7aw.burpcollaborator.net", "oop host")
+	regaxSting := flag.String("rg", "k6unx4pudf8k5itoapaxjwzjigz", "regax Sting")
+	httpMethod := flag.String("hm", "GET", "http Method")
+	flag.Parse()
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+
+		line := scanner.Text()
+
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			body, _ := RawRequest(*httpMethod, line, *path)
+			if xMatch(*regaxSting, body) == true {
+				fmt.Println(line)
+
+			}
+
+		}()
+
+	}
+	wg.Wait()
+
+}
+
+func RawRequest(method string, url string, path string) (body string, scode string) {
+	req, err := rawhttp.FromURL(method, url)
+	if err != nil {
+		log.Println(err)
+
+	}
+	req.AutoSetHost()
+	req.Path = path
+	resp, err := rawhttp.Do(req)
+	if err != nil {
+		log.Println(err)
+
+	}
+	BODY := string(resp.Body())
+	SCODE := string(resp.StatusLine())
+	return BODY, SCODE
+
+}
+
+func xMatch(rg string, str string) bool {
+	match, _ := regexp.MatchString(rg, str)
+	if match == true {
+		return true
+	} else {
+		return false
+
+	}
+
+}
