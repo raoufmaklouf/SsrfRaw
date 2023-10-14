@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"sync"
@@ -45,20 +44,22 @@ func main() {
 }
 
 func RawRequest(method string, url string, path string) (body string, scode string) {
+	var SCODE string
+	var BODY string
+
 	req, err := rawhttp.FromURL(method, url)
-	if err != nil {
-		log.Println(err)
+
+	if err == nil {
+		req.AutoSetHost()
+		req.Path = path
+		resp, err2 := rawhttp.Do(req)
+		if err2 == nil {
+			BODY = string(resp.Body())
+			SCODE = string(resp.StatusLine())
+
+		}
 
 	}
-	req.AutoSetHost()
-	req.Path = path
-	resp, err := rawhttp.Do(req)
-	if err != nil {
-		log.Println(err)
-
-	}
-	BODY := string(resp.Body())
-	SCODE := string(resp.StatusLine())
 	return BODY, SCODE
 
 }
