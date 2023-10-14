@@ -24,18 +24,20 @@ func main() {
 	for scanner.Scan() {
 
 		line := scanner.Text()
+		if isUrl(line) == true {
+			wg.Add(1)
 
-		wg.Add(1)
+			go func() {
+				defer wg.Done()
+				body, _ := RawRequest(*httpMethod, line, *path)
+				if xMatch(*regaxSting, body) == true {
+					fmt.Println(line)
 
-		go func() {
-			defer wg.Done()
-			body, _ := RawRequest(*httpMethod, line, *path)
-			if xMatch(*regaxSting, body) == true {
-				fmt.Println(line)
+				}
 
-			}
+			}()
 
-		}()
+		}
 
 	}
 	wg.Wait()
@@ -70,4 +72,15 @@ func xMatch(rg string, str string) bool {
 
 	}
 
+}
+
+func isUrl(url string) bool {
+	s := false
+	regex1, _ := regexp.MatchString("http", url)
+	regex2, _ := regexp.MatchString("://", url)
+	if regex1 == true && regex2 == true {
+
+		s = true
+	}
+	return s
 }
